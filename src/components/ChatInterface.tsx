@@ -4,6 +4,7 @@ import { Send, Mic, Paperclip, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -11,6 +12,7 @@ interface Message {
   sender: 'user' | 'ai';
   timestamp: Date;
   type?: 'text' | 'data' | 'visualization';
+  data?: any;
 }
 
 const sampleMessages: Message[] = [
@@ -24,13 +26,13 @@ const sampleMessages: Message[] = [
 ];
 
 const suggestedQueries = [
-  "Show me salinity profiles near the equator in March 2023",
-  "Compare BGC parameters in the Arabian Sea for the last 6 months", 
-  "What are the nearest ARGO floats to this location?",
-  "Display temperature anomalies in the Pacific Ocean"
+  "Show me temperature patterns in the Arabian Sea",
+  "Ocean conditions near the equator in the Indian Ocean", 
+  "Salinity data from Bay of Bengal last month",
+  "Temperature profiles in the Southern Indian Ocean"
 ];
 
-export const ChatInterface = () => {
+export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any) => void }) => {
   const [messages, setMessages] = useState<Message[]>(sampleMessages);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -51,18 +53,71 @@ export const ChatInterface = () => {
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Step 1: Parse the query
+      const parseResponse = await supabase.functions.invoke('argo-ai-query', {
+        body: { query: content, type: 'parse_query' }
+      });
+
+      if (parseResponse.error) throw parseResponse.error;
+
+      const { params, knowledge } = parseResponse.data;
+
+      // Step 2: Get ARGO data
+      const dataResponse = await supabase.functions.invoke('argo-ai-query', {
+        body: { params, type: 'get_data' }
+      });
+
+      if (dataResponse.error) throw dataResponse.error;
+
+      const { data: argoData } = dataResponse.data;
+
+      // Step 3: Generate AI summary
+      const summaryResponse = await supabase.functions.invoke('argo-ai-query', {
+        body: { 
+          data: argoData, 
+          userQuery: content,
+          type: 'generate_summary' 
+        }
+      });
+
+      if (summaryResponse.error) throw summaryResponse.error;
+
+      const { summary } = summaryResponse.data;
+
+      // Add AI response with data
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I understand you're asking about "${content}". Let me analyze the ARGO database and provide you with relevant oceanographic data. Here's what I found based on your query...`,
+        content: summary,
+        sender: 'ai',
+        timestamp: new Date(),
+        type: 'data',
+        data: {
+          argoData,
+          queryParams: params,
+          knowledge
+        }
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+      
+      // Pass data to parent component for dashboard
+      if (onDataReceived) {
+        onDataReceived(argoData);
+      }
+    } catch (error) {
+      console.error('Error processing query:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `I apologize, but I encountered an error while processing your query: "${content}". Please try rephrasing your question or try one of the suggested queries below.`,
         sender: 'ai',
         timestamp: new Date(),
         type: 'text'
       };
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
   const handleSuggestedQuery = (query: string) => {
@@ -114,7 +169,37 @@ export const ChatInterface = () => {
                 )}
                 
                 <div className={`${message.sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} float-element`}>
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+                  
+                  {/* Show data visualization for ARGO data responses */}
+                  {message.type === 'data' && message.data?.argoData && (
+                    <div className="mt-4 p-4 bg-card/50 rounded-lg border border-border/50">
+                      <h4 className="font-semibold text-sm mb-2">📊 ARGO Data Summary ({message.data.argoData.length} measurements)</h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-muted-foreground">Temperature Range:</span>
+                          <br />
+                          {Math.min(...message.data.argoData.map((d: any) => parseFloat(d.temperature))).toFixed(1)}°C - {Math.max(...message.data.argoData.map((d: any) => parseFloat(d.temperature))).toFixed(1)}°C
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Salinity Range:</span>
+                          <br />
+                          {Math.min(...message.data.argoData.map((d: any) => parseFloat(d.salinity))).toFixed(1)} - {Math.max(...message.data.argoData.map((d: any) => parseFloat(d.salinity))).toFixed(1)} PSU
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Region:</span>
+                          <br />
+                          {message.data.argoData[0]?.region || 'Multiple Regions'}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Time Range:</span>
+                          <br />
+                          {message.data.queryParams?.start_date} to {message.data.queryParams?.end_date}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="text-xs opacity-70 mt-2">
                     {message.timestamp.toLocaleTimeString()}
                   </div>
