@@ -4,8 +4,11 @@ import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Thermometer, Droplets, Activity, MapPin, TrendingUp, Waves, RefreshCw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Thermometer, Droplets, Activity, MapPin, TrendingUp, Waves, RefreshCw, Database, Settings, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { GeospatialMap } from './GeospatialMap';
+import { LiveDataStream } from './LiveDataStream';
 
 interface ArgoDataPoint {
   time: string;
@@ -22,6 +25,7 @@ interface ArgoDataPoint {
 interface DashboardProps {
   selectedData?: ArgoDataPoint[];
   onRefresh?: () => void;
+  chatQuery?: string;
 }
 
 // Sample oceanographic data for when no real data is available
@@ -75,10 +79,12 @@ const MetricCard = ({ title, value, unit, icon: Icon, trend, delay }: any) => (
   </motion.div>
 );
 
-export const DataDashboard = ({ selectedData, onRefresh }: DashboardProps) => {
+export const DataDashboard = ({ selectedData, onRefresh, chatQuery }: DashboardProps) => {
   const [argoData, setArgoData] = useState<ArgoDataPoint[]>([]);
+  const [liveData, setLiveData] = useState<ArgoDataPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Use selectedData if provided, otherwise fetch Indian Ocean sample data
   const displayData = selectedData || argoData;
@@ -180,6 +186,11 @@ export const DataDashboard = ({ selectedData, onRefresh }: DashboardProps) => {
           <p className="text-muted-foreground">
             Real-time ARGO float measurements • {displayData.length} data points
           </p>
+          {chatQuery && (
+            <p className="text-sm text-accent mt-1">
+              Query: "{chatQuery}"
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             Last updated: {lastUpdated.toLocaleString()}
           </p>
@@ -201,270 +212,538 @@ export const DataDashboard = ({ selectedData, onRefresh }: DashboardProps) => {
         </div>
       </motion.div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Average Temperature"
-          value={avgTemp}
-          unit="°C"
-          icon={Thermometer}
-          trend="2.3"
-          delay={0.1}
-        />
-        <MetricCard
-          title="Salinity Level"
-          value={avgSalinity}
-          unit="PSU"
-          icon={Droplets}
-          trend="0.1"
-          delay={0.2}
-        />
-        <MetricCard
-          title="Active Platforms"
-          value={uniquePlatforms || displayData.length}
-          unit="floats"
-          icon={Activity}
-          trend="5.2"
-          delay={0.3}
-        />
-        <MetricCard
-          title="Regions Covered"
-          value={regionalData.length || 1}
-          unit="areas"
-          icon={MapPin}
-          trend="1.8"
-          delay={0.4}
-        />
-      </div>
+      {/* Navigation Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <Activity className="w-4 h-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="geospatial" className="flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            Geospatial
+          </TabsTrigger>
+          <TabsTrigger value="live" className="flex items-center gap-2">
+            <Waves className="w-4 h-4" />
+            Live Data
+          </TabsTrigger>
+          <TabsTrigger value="database" className="flex items-center gap-2">
+            <Database className="w-4 h-4" />
+            Database
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Settings
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Regional Analysis */}
-        {regionalData.length > 0 && (
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <MetricCard
+              title="Average Temperature"
+              value={avgTemp}
+              unit="°C"
+              icon={Thermometer}
+              trend="2.3"
+              delay={0.1}
+            />
+            <MetricCard
+              title="Salinity Level"
+              value={avgSalinity}
+              unit="PSU"
+              icon={Droplets}
+              trend="0.1"
+              delay={0.2}
+            />
+            <MetricCard
+              title="Active Platforms"
+              value={uniquePlatforms || displayData.length}
+              unit="floats"
+              icon={Activity}
+              trend="5.2"
+              delay={0.3}
+            />
+            <MetricCard
+              title="Regions Covered"
+              value={regionalData.length || 1}
+              unit="areas"
+              icon={MapPin}
+              trend="1.8"
+              delay={0.4}
+            />
+          </div>
+
+          {/* Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Regional Analysis */}
+            {regionalData.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Card className="data-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-primary" />
+                      Regional Analysis
+                    </CardTitle>
+                    <CardDescription>
+                      Temperature and salinity by ocean region
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={regionalData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis 
+                          dataKey="region" 
+                          stroke="hsl(var(--muted-foreground))"
+                          tick={{ fontSize: 12 }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                          formatter={(value, name) => [
+                            `${value}${String(name).includes('temperature') ? '°C' : ' PSU'}`,
+                            String(name) === 'temperature' ? 'Temperature' : 'Salinity'
+                          ]}
+                        />
+                        <Legend />
+                        <Bar dataKey="temperature" fill="hsl(var(--primary))" name="Temperature (°C)" />
+                        <Bar dataKey="salinity" fill="hsl(var(--accent))" name="Salinity (PSU)" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Temperature vs Salinity Scatter */}
+            {scatterData.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Card className="data-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Waves className="w-5 h-5 text-accent" />
+                      Temperature vs Salinity
+                    </CardTitle>
+                    <CardDescription>
+                      Correlation between temperature and salinity measurements
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <ScatterChart data={scatterData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis 
+                          type="number" 
+                          dataKey="temperature" 
+                          name="Temperature" 
+                          unit="°C"
+                          stroke="hsl(var(--muted-foreground))"
+                          domain={['dataMin - 1', 'dataMax + 1']}
+                        />
+                        <YAxis 
+                          type="number" 
+                          dataKey="salinity" 
+                          name="Salinity" 
+                          unit=" PSU"
+                          stroke="hsl(var(--muted-foreground))"
+                          domain={['dataMin - 0.5', 'dataMax + 0.5']}
+                        />
+                        <Tooltip 
+                          cursor={{ strokeDasharray: '3 3' }}
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                          formatter={(value, name) => [
+                            `${value}${name === 'temperature' ? '°C' : ' PSU'}`,
+                            name === 'temperature' ? 'Temperature' : 'Salinity'
+                          ]}
+                          labelFormatter={(label, payload) => {
+                            if (payload && payload[0]) {
+                              return `Platform: ${payload[0].payload.platform} | Region: ${payload[0].payload.region}`;
+                            }
+                            return '';
+                          }}
+                        />
+                        <Scatter 
+                          name="ARGO Measurements" 
+                          data={scatterData} 
+                          fill="hsl(var(--primary))"
+                          fillOpacity={0.7}
+                        />
+                      </ScatterChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Fallback charts when no real data */}
+            {!selectedData && displayData.length === 0 && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Card className="data-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Thermometer className="w-5 h-5 text-primary" />
+                        Temperature vs Depth Profile
+                      </CardTitle>
+                      <CardDescription>
+                        Sample measurements from Arabian Sea ARGO float
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={temperatureData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis 
+                            dataKey="temp" 
+                            stroke="hsl(var(--muted-foreground))"
+                            label={{ value: 'Temperature (°C)', position: 'insideBottom', offset: -10 }}
+                          />
+                          <YAxis 
+                            dataKey="depth" 
+                            reversed 
+                            stroke="hsl(var(--muted-foreground))"
+                            label={{ value: 'Depth (m)', angle: -90, position: 'insideLeft' }}
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'hsl(var(--card))', 
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px'
+                            }} 
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="temp" 
+                            stroke="hsl(var(--primary))" 
+                            strokeWidth={3}
+                            dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Card className="data-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Waves className="w-5 h-5 text-accent" />
+                        Biogeochemical Parameters
+                      </CardTitle>
+                      <CardDescription>
+                        6-month trend in Arabian Sea region
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <AreaChart data={bgcData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis 
+                            dataKey="date" 
+                            stroke="hsl(var(--muted-foreground))"
+                          />
+                          <YAxis stroke="hsl(var(--muted-foreground))" />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'hsl(var(--card))', 
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px'
+                            }} 
+                          />
+                          <Area 
+                            type="monotone" 
+                            dataKey="oxygen" 
+                            stackId="1"
+                            stroke="hsl(var(--primary))" 
+                            fill="hsl(var(--primary) / 0.3)"
+                          />
+                          <Area 
+                            type="monotone" 
+                            dataKey="chlorophyll" 
+                            stackId="2"
+                            stroke="hsl(var(--accent))" 
+                            fill="hsl(var(--accent) / 0.3)"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Geospatial Tab */}
+        <TabsContent value="geospatial" className="space-y-6">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
           >
             <Card className="data-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  Regional Analysis
+                  <Globe className="w-5 h-5 text-primary" />
+                  Global ARGO Float Distribution
                 </CardTitle>
                 <CardDescription>
-                  Temperature and salinity by ocean region
+                  Interactive 3D visualization of float locations and measurements
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={regionalData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="region" 
-                      stroke="hsl(var(--muted-foreground))"
-                      tick={{ fontSize: 12 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                      formatter={(value, name) => [
-                        `${value}${String(name).includes('temperature') ? '°C' : ' PSU'}`,
-                        String(name) === 'temperature' ? 'Temperature' : 'Salinity'
-                      ]}
-                    />
-                    <Legend />
-                    <Bar dataKey="temperature" fill="hsl(var(--primary))" name="Temperature (°C)" />
-                    <Bar dataKey="salinity" fill="hsl(var(--accent))" name="Salinity (PSU)" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <GeospatialMap 
+                  data={displayData.map(d => ({
+                    latitude: parseFloat(d.latitude),
+                    longitude: parseFloat(d.longitude),
+                    temperature: parseFloat(d.temperature),
+                    salinity: parseFloat(d.salinity),
+                    platform: d.platform,
+                    region: d.region
+                  }))}
+                  className="h-[500px]"
+                />
               </CardContent>
             </Card>
           </motion.div>
-        )}
+        </TabsContent>
 
-        {/* Temperature vs Salinity Scatter */}
-        {scatterData.length > 0 && (
+        {/* Live Data Tab */}
+        <TabsContent value="live" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <LiveDataStream 
+              onDataUpdate={(newData) => setLiveData(newData)}
+              className="h-[500px]"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <Card className="data-card h-[500px]">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-accent" />
+                    Live Statistics
+                  </CardTitle>
+                  <CardDescription>
+                    Real-time aggregated metrics from streaming data
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 rounded-lg bg-primary/10">
+                      <div className="text-2xl font-bold text-primary">
+                        {liveData.length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Live Points
+                      </div>
+                    </div>
+                    <div className="text-center p-4 rounded-lg bg-accent/10">
+                      <div className="text-2xl font-bold text-accent">
+                        {liveData.length > 0 
+                          ? (liveData.reduce((sum, d) => sum + parseFloat(d.temperature), 0) / liveData.length).toFixed(1)
+                          : '0.0'
+                        }°C
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Avg Temp
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {liveData.length > 0 && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={liveData.slice(0, 10).reverse()}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis 
+                          dataKey={(data) => new Date(data.time).toLocaleTimeString()}
+                          stroke="hsl(var(--muted-foreground))"
+                          tick={{ fontSize: 10 }}
+                        />
+                        <YAxis stroke="hsl(var(--muted-foreground))" />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="temperature" 
+                          stroke="hsl(var(--primary))" 
+                          strokeWidth={2}
+                          dot={{ fill: 'hsl(var(--primary))', r: 3 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </TabsContent>
+
+        {/* Database Tab */}
+        <TabsContent value="database" className="space-y-6">
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
           >
             <Card className="data-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Waves className="w-5 h-5 text-accent" />
-                  Temperature vs Salinity
+                  <Database className="w-5 h-5 text-primary" />
+                  Database Statistics
                 </CardTitle>
                 <CardDescription>
-                  Correlation between temperature and salinity measurements
+                  ARGO database performance and storage metrics
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <ScatterChart data={scatterData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      type="number" 
-                      dataKey="temperature" 
-                      name="Temperature" 
-                      unit="°C"
-                      stroke="hsl(var(--muted-foreground))"
-                      domain={['dataMin - 1', 'dataMax + 1']}
-                    />
-                    <YAxis 
-                      type="number" 
-                      dataKey="salinity" 
-                      name="Salinity" 
-                      unit=" PSU"
-                      stroke="hsl(var(--muted-foreground))"
-                      domain={['dataMin - 0.5', 'dataMax + 0.5']}
-                    />
-                    <Tooltip 
-                      cursor={{ strokeDasharray: '3 3' }}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                      formatter={(value, name) => [
-                        `${value}${name === 'temperature' ? '°C' : ' PSU'}`,
-                        name === 'temperature' ? 'Temperature' : 'Salinity'
-                      ]}
-                      labelFormatter={(label, payload) => {
-                        if (payload && payload[0]) {
-                          return `Platform: ${payload[0].payload.platform} | Region: ${payload[0].payload.region}`;
-                        }
-                        return '';
-                      }}
-                    />
-                    <Scatter 
-                      name="ARGO Measurements" 
-                      data={scatterData} 
-                      fill="hsl(var(--primary))"
-                      fillOpacity={0.7}
-                    />
-                  </ScatterChart>
-                </ResponsiveContainer>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center p-6 rounded-lg bg-primary/10">
+                    <div className="text-3xl font-bold text-primary mb-2">2.5M+</div>
+                    <div className="text-sm text-muted-foreground">Total Profiles</div>
+                  </div>
+                  <div className="text-center p-6 rounded-lg bg-accent/10">
+                    <div className="text-3xl font-bold text-accent mb-2">150TB</div>
+                    <div className="text-sm text-muted-foreground">Data Storage</div>
+                  </div>
+                  <div className="text-center p-6 rounded-lg bg-secondary/10">
+                    <div className="text-3xl font-bold text-foreground mb-2">99.9%</div>
+                    <div className="text-sm text-muted-foreground">Uptime</div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 space-y-4">
+                  <h4 className="text-lg font-semibold text-foreground">Recent Database Activity</h4>
+                  <div className="space-y-2">
+                    {[
+                      'Profile sync completed - 150 new entries',
+                      'Temperature calibration update applied',
+                      'Salinity data validation passed',
+                      'Regional index optimization complete'
+                    ].map((activity, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm p-2 rounded bg-accent/5">
+                        <div className="w-2 h-2 rounded-full bg-accent"></div>
+                        <span className="text-muted-foreground">{activity}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
-        )}
+        </TabsContent>
 
-        {/* Fallback: Temperature/Depth Profile when no real data */}
-        {!selectedData && displayData.length === 0 && (
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="space-y-6">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
           >
             <Card className="data-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Thermometer className="w-5 h-5 text-primary" />
-                  Temperature vs Depth Profile
+                  <Settings className="w-5 h-5 text-primary" />
+                  Dashboard Settings
                 </CardTitle>
                 <CardDescription>
-                  Sample measurements from Arabian Sea ARGO float
+                  Configure display preferences and data filtering options
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={temperatureData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="temp" 
-                      stroke="hsl(var(--muted-foreground))"
-                      label={{ value: 'Temperature (°C)', position: 'insideBottom', offset: -10 }}
-                    />
-                    <YAxis 
-                      dataKey="depth" 
-                      reversed 
-                      stroke="hsl(var(--muted-foreground))"
-                      label={{ value: 'Depth (m)', angle: -90, position: 'insideLeft' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }} 
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="temp" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={3}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-foreground">Display Options</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Temperature Unit</label>
+                      <select className="w-full p-2 rounded border border-border bg-background text-foreground">
+                        <option>Celsius (°C)</option>
+                        <option>Fahrenheit (°F)</option>
+                        <option>Kelvin (K)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Date Format</label>
+                      <select className="w-full p-2 rounded border border-border bg-background text-foreground">
+                        <option>MM/DD/YYYY</option>
+                        <option>DD/MM/YYYY</option>
+                        <option>YYYY-MM-DD</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-foreground">Data Filters</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Region Filter</label>
+                      <select className="w-full p-2 rounded border border-border bg-background text-foreground">
+                        <option>All Regions</option>
+                        <option>Indian Ocean</option>
+                        <option>Pacific Ocean</option>
+                        <option>Atlantic Ocean</option>
+                        <option>Arabian Sea</option>
+                        <option>Bay of Bengal</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Time Range</label>
+                      <select className="w-full p-2 rounded border border-border bg-background text-foreground">
+                        <option>Last 24 Hours</option>
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>Last 6 Months</option>
+                        <option>All Time</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-border">
+                  <Button className="w-full">
+                    Save Settings
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
-        )}
-
-        {/* BGC Parameters - fallback */}
-        {!selectedData && displayData.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Card className="data-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Waves className="w-5 h-5 text-accent" />
-                  Biogeochemical Parameters
-                </CardTitle>
-                <CardDescription>
-                  6-month trend in Arabian Sea region
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={bgcData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="hsl(var(--muted-foreground))"
-                    />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }} 
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="oxygen" 
-                      stackId="1"
-                      stroke="hsl(var(--primary))" 
-                      fill="hsl(var(--primary) / 0.3)"
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="chlorophyll" 
-                      stackId="2"
-                      stroke="hsl(var(--accent))" 
-                      fill="hsl(var(--accent) / 0.3)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Data Summary Table */}
       {displayData.length > 0 && (
