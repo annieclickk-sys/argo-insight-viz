@@ -155,16 +155,17 @@ serve(async (req) => {
   }
 
   try {
-    const { query, type } = await req.json();
+    const requestBody = await req.json();
+    const { query, type, params, data, userQuery } = requestBody;
     
     if (type === 'parse_query') {
       // Parse natural language query into parameters
-      const params = parseGeographicQuery(query);
+      const parsedParams = parseGeographicQuery(query);
       const relevantKnowledge = retrieveRelevantKnowledge(query);
       
       return new Response(JSON.stringify({
         success: true,
-        params,
+        params: parsedParams,
         knowledge: relevantKnowledge
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -173,13 +174,12 @@ serve(async (req) => {
     
     if (type === 'get_data') {
       // Generate ARGO data based on parameters
-      const { params } = await req.json();
-      const data = generateArgoData(params);
+      const argoData = generateArgoData(params);
       
       return new Response(JSON.stringify({
         success: true,
-        data,
-        count: data.length
+        data: argoData,
+        count: argoData.length
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -187,7 +187,6 @@ serve(async (req) => {
     
     if (type === 'generate_summary') {
       // Generate AI summary using Google Gemini
-      const { data, userQuery } = await req.json();
       const relevantKnowledge = retrieveRelevantKnowledge(userQuery);
       
       const prompt = `Based on the following ARGO ocean data and oceanographic knowledge, provide a comprehensive analysis:
