@@ -1,8 +1,10 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { motion } from 'framer-motion';
 import * as THREE from 'three';
+import earthTexture from '@/assets/earth-texture.jpg';
+import earthClouds from '@/assets/earth-clouds.jpg';
 
 interface DataPoint {
   latitude: number;
@@ -18,53 +20,76 @@ interface GeospatialMapProps {
   className?: string;
 }
 
-function Globe() {
-  const meshRef = useRef<THREE.Mesh>(null);
+function RealisticGlobe() {
+  const earthRef = useRef<THREE.Mesh>(null);
+  const cloudsRef = useRef<THREE.Mesh>(null);
+  const atmosphereRef = useRef<THREE.Mesh>(null);
   
-  const texture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d')!;
-    
-    // Create world map texture
-    const gradient = ctx.createLinearGradient(0, 0, 1024, 512);
-    gradient.addColorStop(0, '#1e40af');
-    gradient.addColorStop(0.5, '#2563eb');
-    gradient.addColorStop(1, '#3b82f6');
-    
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1024, 512);
-    
-    // Add continents
-    ctx.fillStyle = '#334155';
-    ctx.globalAlpha = 0.8;
-    
-    const continents = [
-      { x: 150, y: 200, w: 120, h: 80 }, // Africa
-      { x: 300, y: 150, w: 200, h: 120 }, // Asia
-      { x: 750, y: 200, w: 150, h: 100 }, // Americas
-      { x: 650, y: 350, w: 80, h: 60 }, // Australia
-    ];
-    
-    continents.forEach(continent => {
-      ctx.fillRect(continent.x, continent.y, continent.w, continent.h);
+  // Load realistic earth textures
+  const earthMap = useLoader(THREE.TextureLoader, earthTexture);
+  const cloudsMap = useLoader(THREE.TextureLoader, earthClouds);
+  
+  // Create atmosphere shader material
+  const atmosphereMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(0.6 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+          gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true
     });
-    
-    return new THREE.CanvasTexture(canvas);
   }, []);
 
   useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.05;
+    if (earthRef.current) {
+      earthRef.current.rotation.y = state.clock.elapsedTime * 0.02;
+    }
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y = state.clock.elapsedTime * 0.025;
     }
   });
 
   return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[2, 64, 32]} />
-      <meshLambertMaterial map={texture} />
-    </mesh>
+    <group>
+      {/* Atmosphere */}
+      <mesh ref={atmosphereRef} scale={[1.05, 1.05, 1.05]}>
+        <sphereGeometry args={[2, 64, 32]} />
+        <primitive object={atmosphereMaterial} />
+      </mesh>
+      
+      {/* Earth */}
+      <mesh ref={earthRef}>
+        <sphereGeometry args={[2, 64, 32]} />
+        <meshPhongMaterial 
+          map={earthMap}
+          bumpScale={0.02}
+          shininess={0.3}
+        />
+      </mesh>
+      
+      {/* Clouds */}
+      <mesh ref={cloudsRef} scale={[1.005, 1.005, 1.005]}>
+        <sphereGeometry args={[2, 64, 32]} />
+        <meshPhongMaterial
+          map={cloudsMap}
+          transparent={true}
+          opacity={0.4}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
   );
 }
 
@@ -125,11 +150,15 @@ export const GeospatialMap: React.FC<GeospatialMapProps> = ({
       transition={{ duration: 0.8 }}
     >
       <Canvas camera={{ position: [0, 0, 6], fov: 50 }}>
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[5, 5, 5]} intensity={1} />
-        <pointLight position={[-5, -5, -5]} intensity={0.5} color="#3b82f6" />
+        <ambientLight intensity={0.3} />
+        <directionalLight 
+          position={[5, 3, 5]} 
+          intensity={1.2} 
+          color="#ffffff"
+        />
+        <pointLight position={[-5, -5, -5]} intensity={0.4} color="#4F46E5" />
         
-        <Globe />
+        <RealisticGlobe />
         <DataPoints data={data} />
         
         <OrbitControls 
