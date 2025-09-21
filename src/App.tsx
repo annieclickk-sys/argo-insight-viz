@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import { ChatPage } from "./pages/ChatPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { GeospatialPage } from "./pages/GeospatialPage";
+import { LiveDataPage } from "./pages/LiveDataPage";
 import { FloatChatLayout } from "./components/FloatChatLayout";
 import NotFound from "./pages/NotFound";
 
@@ -32,10 +34,7 @@ const App = () => (
           {/* Placeholder routes for other navigation items */}
           <Route path="/map" element={
             <FloatChatLayout>
-              <div className="p-8">
-                <h1 className="text-2xl font-bold text-foreground">Geospatial Map</h1>
-                <p className="text-muted-foreground">Interactive ocean mapping coming soon...</p>
-              </div>
+              <GeospatialPage />
             </FloatChatLayout>
           } />
           <Route path="/floats" element={
@@ -48,10 +47,7 @@ const App = () => (
           } />
           <Route path="/live" element={
             <FloatChatLayout>
-              <div className="p-8">
-                <h1 className="text-2xl font-bold text-foreground">Live Data</h1>
-                <p className="text-muted-foreground">Real-time data streams coming soon...</p>
-              </div>
+              <LiveDataPage />
             </FloatChatLayout>
           } />
           <Route path="/database" element={
