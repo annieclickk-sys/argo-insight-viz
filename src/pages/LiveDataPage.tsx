@@ -11,7 +11,7 @@ export const LiveDataPage = () => {
         <div className="flex-1">
           <h1 className="text-lg font-semibold text-foreground">Live ARGO Data Stream</h1>
           <p className="text-sm text-muted-foreground">
-            Real-time ocean data from ARGO floats worldwide
+            Real-time ocean data from ARGO floats worldwide - Updated
           </p>
         </div>
       </header>
