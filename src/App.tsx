@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import { ChatPage } from "./pages/ChatPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DatabasePage } from "./pages/DatabasePage";
 import { GeospatialPage } from "./pages/GeospatialPage";
 import { LiveDataPage } from "./pages/LiveDataPage";
 import { FloatChatLayout } from "./components/FloatChatLayout";
@@ -52,10 +53,7 @@ const App = () => (
           } />
           <Route path="/database" element={
             <FloatChatLayout>
-              <div className="p-8">
-                <h1 className="text-2xl font-bold text-foreground">Database</h1>
-                <p className="text-muted-foreground">Database management interface coming soon...</p>
-              </div>
+              <DatabasePage />
             </FloatChatLayout>
           } />
           <Route path="/settings" element={
