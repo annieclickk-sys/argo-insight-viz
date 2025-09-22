@@ -9,6 +9,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { DatabasePage } from "./pages/DatabasePage";
 import { GeospatialPage } from "./pages/GeospatialPage";
 import { LiveDataPage } from "./pages/LiveDataPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { FloatChatLayout } from "./components/FloatChatLayout";
 import NotFound from "./pages/NotFound";
 
@@ -58,10 +59,7 @@ const App = () => (
           } />
           <Route path="/settings" element={
             <FloatChatLayout>
-              <div className="p-8">
-                <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-                <p className="text-muted-foreground">System configuration coming soon...</p>
-              </div>
+              <SettingsPage />
             </FloatChatLayout>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
