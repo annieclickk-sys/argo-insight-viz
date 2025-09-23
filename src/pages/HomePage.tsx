@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { OceanGlobe } from '@/components/OceanGlobe';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { MessageSquare, BarChart3, Map } from 'lucide-react';
 
 export const HomePage = () => {
@@ -17,6 +18,7 @@ export const HomePage = () => {
       >
         <SidebarTrigger className="text-foreground hover:bg-background/20 transition-smooth" />
         <div className="flex items-center gap-4">
+          <ThemeSwitcher />
           <motion.div 
             className="text-sm text-muted-foreground"
             initial={{ opacity: 0 }}

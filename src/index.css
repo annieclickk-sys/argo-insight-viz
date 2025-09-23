@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Ocean Color Palette */
+    /* Dark Ocean Theme (Default) */
     --background: 220 26% 8%;
     --foreground: 193 100% 95%;
 
@@ -62,6 +62,112 @@
     --sidebar-accent-foreground: 193 85% 85%;
     --sidebar-border: 220 15% 20%;
     --sidebar-ring: 193 76% 48%;
+  }
+
+  /* Light Ocean Theme */
+  [data-theme="light"] {
+    --background: 210 40% 98%;
+    --foreground: 220 26% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 26% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 26% 8%;
+
+    --primary: 193 76% 40%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 92%;
+    --secondary-foreground: 220 26% 8%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 176 65% 45%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 193 76% 40%;
+
+    /* Light Ocean Gradients */
+    --gradient-ocean: linear-gradient(135deg, hsl(210 40% 98%), hsl(193 76% 85%));
+    --gradient-surface: linear-gradient(90deg, hsl(193 76% 40%), hsl(176 65% 45%));
+    --gradient-deep: linear-gradient(180deg, hsl(210 40% 98%), hsl(210 40% 92%));
+    --gradient-data: linear-gradient(45deg, hsl(193 76% 40%), hsl(45 100% 60%));
+
+    /* Light Effects */
+    --glow-primary: 0 0 30px hsl(193 76% 40% / 0.3);
+    --glow-accent: 0 0 20px hsl(176 65% 45% / 0.4);
+    --shadow-deep: 0 8px 32px hsl(220 40% 20% / 0.15);
+    --shadow-float: 0 4px 20px hsl(193 76% 40% / 0.2);
+
+    /* Light Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 26% 8%;
+    --sidebar-primary: 193 76% 40%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 220 26% 8%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 193 76% 40%;
+  }
+
+  /* Deep Blue Earth Theme */
+  [data-theme="deep-blue"] {
+    --background: 220 40% 6%;
+    --foreground: 215 84% 92%;
+
+    --card: 220 35% 10%;
+    --card-foreground: 215 84% 92%;
+
+    --popover: 220 35% 8%;
+    --popover-foreground: 215 84% 92%;
+
+    --primary: 215 84% 60%;
+    --primary-foreground: 220 40% 6%;
+
+    --secondary: 220 35% 14%;
+    --secondary-foreground: 215 70% 85%;
+
+    --muted: 220 30% 16%;
+    --muted-foreground: 215 40% 65%;
+
+    --accent: 240 75% 65%;
+    --accent-foreground: 220 40% 6%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 30% 18%;
+    --input: 220 30% 14%;
+    --ring: 215 84% 60%;
+
+    /* Deep Blue Gradients */
+    --gradient-ocean: linear-gradient(135deg, hsl(220 40% 6%), hsl(215 84% 20%));
+    --gradient-surface: linear-gradient(90deg, hsl(215 84% 60%), hsl(240 75% 65%));
+    --gradient-deep: linear-gradient(180deg, hsl(220 40% 6%), hsl(220 50% 3%));
+    --gradient-data: linear-gradient(45deg, hsl(215 84% 60%), hsl(280 100% 70%));
+
+    /* Deep Blue Effects */
+    --glow-primary: 0 0 40px hsl(215 84% 60% / 0.4);
+    --glow-accent: 0 0 25px hsl(240 75% 65% / 0.4);
+    --shadow-deep: 0 8px 40px hsl(220 50% 3% / 0.7);
+    --shadow-float: 0 4px 25px hsl(215 84% 60% / 0.25);
+
+    /* Deep Blue Sidebar */
+    --sidebar-background: 220 35% 8%;
+    --sidebar-foreground: 215 70% 85%;
+    --sidebar-primary: 215 84% 60%;
+    --sidebar-primary-foreground: 220 40% 6%;
+    --sidebar-accent: 220 30% 16%;
+    --sidebar-accent-foreground: 215 70% 85%;
+    --sidebar-border: 220 30% 18%;
+    --sidebar-ring: 215 84% 60%;
   }
 }
 

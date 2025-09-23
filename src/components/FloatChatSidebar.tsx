@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import {
   Sidebar,
   SidebarContent,
@@ -123,6 +124,14 @@ export function FloatChatSidebar() {
             </p>
           </motion.div>
         )}
+        
+        {/* Theme switcher at bottom */}
+        <div className="mt-auto p-4 border-t border-sidebar-border">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Theme</span>
+            <ThemeSwitcher />
+          </div>
+        </div>
       </SidebarContent>
     </Sidebar>
   );
