@@ -1,7 +1,8 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Info } from 'lucide-react';
 import * as THREE from 'three';
 import earthTexture from '@/assets/earth-texture.jpg';
 import earthClouds from '@/assets/earth-clouds.jpg';
@@ -179,6 +180,8 @@ function FloatingParticles() {
 }
 
 export const OceanGlobe = () => {
+  const [showInfo, setShowInfo] = useState(false);
+  
   return (
     <motion.div 
       className="w-full h-full relative"
@@ -229,24 +232,47 @@ export const OceanGlobe = () => {
         />
       </Canvas>
       
-      {/* Overlay Info */}
-      <motion.div 
-        className="absolute top-8 left-8 data-card max-w-sm"
-        initial={{ opacity: 0, x: -50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.8 }}
+      {/* Toggle Info Button */}
+      <motion.button
+        onClick={() => setShowInfo(!showInfo)}
+        className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background/90 transition-colors"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
       >
-        <h3 className="text-xl font-bold text-foreground mb-2">ARGO Global Ocean</h3>
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          Explore real-time ocean data from autonomous profiling floats deployed worldwide. 
-          Interact with the globe to discover temperature, salinity, and biogeochemical measurements.
-        </p>
-        <div className="flex gap-2 mt-4">
-          <button className="ocean-button text-sm py-2 px-4">
-            Explore Data
-          </button>
-        </div>
-      </motion.div>
+        <Info className="w-5 h-5 text-foreground" />
+      </motion.button>
+
+      {/* Overlay Info - Now hideable */}
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div 
+            className="absolute top-16 left-4 data-card max-w-sm z-10"
+            initial={{ opacity: 0, x: -50, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -50, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="text-xl font-bold text-foreground">ARGO Global Ocean</h3>
+              <button 
+                onClick={() => setShowInfo(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Explore real-time ocean data from autonomous profiling floats deployed worldwide. 
+              Interact with the globe to discover temperature, salinity, and biogeochemical measurements.
+            </p>
+            <div className="flex gap-2 mt-4">
+              <button className="ocean-button text-sm py-2 px-4">
+                Explore Data
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Stats Overlay */}
       <motion.div 
