@@ -125,8 +125,10 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
   };
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    // Auto scroll to bottom when new messages are added
+    const scrollContainer = document.querySelector('[data-radix-scroll-area-viewport]');
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
   }, [messages]);
 
@@ -150,7 +152,8 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
       </motion.div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full p-6">{" "}
         <div className="space-y-6 max-w-4xl mx-auto">
           <AnimatePresence>
             {messages.map((message) => (
@@ -168,8 +171,8 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
                   </div>
                 )}
                 
-                <div className={`${message.sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} float-element`}>
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+                <div className={`max-w-[80%] ${message.sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} float-element`}>
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.content}</div>
                   
                   {/* Show data visualization for ARGO data responses */}
                   {message.type === 'data' && message.data?.argoData && (
@@ -237,7 +240,8 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
             )}
           </AnimatePresence>
         </div>
-      </ScrollArea>
+        </ScrollArea>
+      </div>
 
       {/* Suggested Queries */}
       {messages.length <= 1 && (
