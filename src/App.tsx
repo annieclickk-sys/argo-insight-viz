@@ -10,6 +10,7 @@ import { DatabasePage } from "./pages/DatabasePage";
 import { GeospatialPage } from "./pages/GeospatialPage";
 import { LiveDataPage } from "./pages/LiveDataPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { ArgoFloatsPage } from "./pages/ArgoFloatsPage";
 import { FloatChatLayout } from "./components/FloatChatLayout";
 import NotFound from "./pages/NotFound";
 
@@ -41,10 +42,7 @@ const App = () => (
           } />
           <Route path="/floats" element={
             <FloatChatLayout>
-              <div className="p-8">
-                <h1 className="text-2xl font-bold text-foreground">ARGO Floats</h1>
-                <p className="text-muted-foreground">Float management interface coming soon...</p>
-              </div>
+              <ArgoFloatsPage />
             </FloatChatLayout>
           } />
           <Route path="/live" element={
