@@ -125,6 +125,23 @@ export function FloatChatSidebar() {
           </motion.div>
         )}
         
+        {/* Team Section */}
+        {!collapsed && (
+          <motion.div 
+            className="mt-4 p-4 rounded-xl bg-primary/10 border border-primary/20 m-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <h3 className="text-sm font-bold text-primary mb-3">ARGOAvengers</h3>
+            <div className="space-y-1">
+              {["Mahir Shah", "Yashvardhan Jani", "Vishwa Shah", "Preksha Patel", "Sachi Patel", "Daksh Shah"].map((member) => (
+                <p key={member} className="text-xs text-muted-foreground">• {member}</p>
+              ))}
+            </div>
+          </motion.div>
+        )}
+        
         {/* Theme switcher at bottom */}
         <div className="mt-auto p-4 border-t border-sidebar-border">
           <div className="flex items-center justify-between">

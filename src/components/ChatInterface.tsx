@@ -153,7 +153,7 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
 
       {/* Messages Area - Fixed height and scrollable */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
           <div className="p-6 space-y-6 max-w-4xl mx-auto">
             <AnimatePresence>
               {messages.map((message) => (
