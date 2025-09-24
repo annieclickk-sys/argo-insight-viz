@@ -152,9 +152,10 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
       </motion.div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full p-6">{" "}
-        <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="p-6">
+            <div className="space-y-6 max-w-4xl mx-auto">
           <AnimatePresence>
             {messages.map((message) => (
               <motion.div
@@ -239,7 +240,8 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+            </div>
+          </div>
         </ScrollArea>
       </div>
 
