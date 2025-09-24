@@ -126,7 +126,7 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
 
   useEffect(() => {
     // Auto scroll to bottom when new messages are added
-    const scrollContainer = document.querySelector('[data-radix-scroll-area-viewport]');
+    const scrollContainer = document.querySelector('.overflow-y-auto');
     if (scrollContainer) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
@@ -136,7 +136,7 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
       <motion.div 
-        className="p-6 border-b border-border/50 bg-card/50 backdrop-blur-md"
+        className="p-6 border-b border-border/50 bg-card/50 backdrop-blur-md flex-shrink-0"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -151,98 +151,96 @@ export const ChatInterface = ({ onDataReceived }: { onDataReceived?: (data: any)
         </div>
       </motion.div>
 
-      {/* Messages Area */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className="p-6">
-            <div className="space-y-6 max-w-4xl mx-auto">
-          <AnimatePresence>
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {message.sender === 'ai' && (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                )}
-                
-                <div className={`max-w-[80%] ${message.sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} float-element`}>
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.content}</div>
-                  
-                  {/* Show data visualization for ARGO data responses */}
-                  {message.type === 'data' && message.data?.argoData && (
-                    <div className="mt-4 p-4 bg-card/50 rounded-lg border border-border/50">
-                      <h4 className="font-semibold text-sm mb-2">📊 ARGO Data Summary ({message.data.argoData.length} measurements)</h4>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <span className="text-muted-foreground">Temperature Range:</span>
-                          <br />
-                          {Math.min(...message.data.argoData.map((d: any) => parseFloat(d.temperature))).toFixed(1)}°C - {Math.max(...message.data.argoData.map((d: any) => parseFloat(d.temperature))).toFixed(1)}°C
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Salinity Range:</span>
-                          <br />
-                          {Math.min(...message.data.argoData.map((d: any) => parseFloat(d.salinity))).toFixed(1)} - {Math.max(...message.data.argoData.map((d: any) => parseFloat(d.salinity))).toFixed(1)} PSU
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Region:</span>
-                          <br />
-                          {message.data.argoData[0]?.region || 'Multiple Regions'}
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Time Range:</span>
-                          <br />
-                          {message.data.queryParams?.start_date} to {message.data.queryParams?.end_date}
-                        </div>
-                      </div>
+      {/* Messages Area - Fixed height and scrollable */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6 max-w-4xl mx-auto">
+            <AnimatePresence>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {message.sender === 'ai' && (
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-4 h-4 text-primary-foreground" />
                     </div>
                   )}
                   
-                  <div className="text-xs opacity-70 mt-2">
-                    {message.timestamp.toLocaleTimeString()}
+                  <div className={`max-w-[80%] ${message.sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} float-element`}>
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</div>
+                    
+                    {/* Show data visualization for ARGO data responses */}
+                    {message.type === 'data' && message.data?.argoData && (
+                      <div className="mt-4 p-4 bg-card/50 rounded-lg border border-border/50">
+                        <h4 className="font-semibold text-sm mb-2">📊 ARGO Data Summary ({message.data.argoData.length} measurements)</h4>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Temperature Range:</span>
+                            <br />
+                            {Math.min(...message.data.argoData.map((d: any) => parseFloat(d.temperature))).toFixed(1)}°C - {Math.max(...message.data.argoData.map((d: any) => parseFloat(d.temperature))).toFixed(1)}°C
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Salinity Range:</span>
+                            <br />
+                            {Math.min(...message.data.argoData.map((d: any) => parseFloat(d.salinity))).toFixed(1)} - {Math.max(...message.data.argoData.map((d: any) => parseFloat(d.salinity))).toFixed(1)} PSU
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Region:</span>
+                            <br />
+                            {message.data.argoData[0]?.region || 'Multiple Regions'}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Time Range:</span>
+                            <br />
+                            {message.data.queryParams?.start_date} to {message.data.queryParams?.end_date}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="text-xs opacity-70 mt-2">
+                      {message.timestamp.toLocaleTimeString()}
+                    </div>
                   </div>
-                </div>
 
-                {message.sender === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-accent-foreground" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                  {message.sender === 'user' && (
+                    <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-accent-foreground" />
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
-          {/* Typing Indicator */}
-          <AnimatePresence>
-            {isTyping && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="flex gap-3"
-              >
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-primary-foreground" />
-                </div>
-                <div className="chat-bubble-ai">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            {/* Typing Indicator */}
+            <AnimatePresence>
+              {isTyping && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="flex gap-3"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-primary-foreground" />
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-            </div>
+                  <div className="chat-bubble-ai">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Suggested Queries */}
