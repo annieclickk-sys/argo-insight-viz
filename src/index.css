@@ -246,49 +246,101 @@
     @apply bg-card text-card-foreground rounded-2xl px-4 py-3 max-w-xs mr-auto border;
     box-shadow: var(--shadow-float);
   }
-
-  /* Data Visualization Styles */
+}
+@media (max-width: 640px) {
   .data-card {
-    @apply bg-card/80 backdrop-blur-md border rounded-xl p-6;
-    box-shadow: var(--shadow-deep);
+    @apply p-3 mx-4;
   }
-
+  
   .ocean-button {
-    @apply bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium;
-    background: var(--gradient-surface);
-    transition: var(--transition-smooth);
-    box-shadow: var(--shadow-float);
+    @apply px-3 py-2 text-sm;
   }
-
-  .ocean-button:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--glow-primary);
+  
+  .chat-bubble-user,
+  .chat-bubble-ai {
+    @apply max-w-[90%];
   }
 }
 
-@layer utilities {
-  .gradient-ocean {
-    background: var(--gradient-ocean);
+@media (max-width: 768px) {
+  .sidebar {
+    @apply w-full;
   }
-
-  .gradient-surface {
-    background: var(--gradient-surface);
+  
+  .grid-dashboard {
+    @apply grid-cols-1;
   }
+}
 
-  .gradient-deep {
-    background: var(--gradient-deep);
+@media (max-width: 1024px) {
+  .grid-dashboard {
+    @apply grid-cols-2;
   }
-
-  .gradient-data {
-    background: var(--gradient-data);
+  
+  .data-visualization {
+    @apply h-64;
   }
+}
 
-  .transition-smooth {
-    transition: var(--transition-smooth);
+@media (min-width: 1280px) {
+  .container {
+    @apply max-w-7xl;
   }
+  
+  .data-visualization {
+    @apply h-96;
+  }
+}
 
-  .transition-float {
-    transition: var(--transition-float);
+/* Enhanced animations for better UX */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 2s infinite;
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-glow {
+  from {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.6);
+  }
+}
+
+/* Responsive text scaling */
+.responsive-text {
+  font-size: clamp(0.875rem, 2.5vw, 1.125rem);
+}
+
+.responsive-title {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* Mobile-first approach for containers */
+.container-responsive {
+  @apply w-full px-4 mx-auto;
+  max-width: min(100% - 2rem, 1280px);
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    @apply px-6;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    @apply px-8;
   }
 }
 
