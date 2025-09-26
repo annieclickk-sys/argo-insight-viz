@@ -17,7 +17,16 @@ import {
   RefreshCw,
   AlertTriangle,
   CheckCircle,
-  Clock
+  Clock,
+  Waves,
+  Ship,
+  Settings,
+  Play,
+  Pause,
+  Plus,
+  Edit,
+  Trash2,
+  Navigation
 } from 'lucide-react';
 
 interface ArgoFloat {
@@ -317,36 +326,233 @@ export const ArgoFloatsPage = () => {
           </TabsContent>
 
           <TabsContent value="monitoring" className="space-y-4">
+            {/* Live Status Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Active Floats Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-green-500" />
+                    Live Float Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {mockFloats.filter(f => f.status === 'active').map(float => (
+                    <div key={float.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <div>
+                          <p className="font-medium">{float.name}</p>
+                          <p className="text-sm text-muted-foreground">{float.id}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">{float.temperature}°C</p>
+                        <p className="text-xs text-muted-foreground">{float.batteryLevel}% battery</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Real-time Data Stream */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Waves className="h-5 w-5 text-blue-500" />
+                    Data Stream
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 p-2 border-l-2 border-primary/30 bg-muted/30 rounded-r">
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(Date.now() - i * 30000).toLocaleTimeString()}
+                        </div>
+                        <div className="text-sm">
+                          <span className="font-medium">ARG00{(i % 4) + 1}</span>: 
+                          <span className="ml-1">
+                            T: {(18 + Math.random() * 10).toFixed(1)}°C, 
+                            S: {(34 + Math.random() * 2).toFixed(1)} PSU
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Control Panel */}
             <Card>
               <CardHeader>
-                <CardTitle>Real-time Monitoring Dashboard</CardTitle>
-                <CardDescription>Live data streams from active ARGO floats</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Monitoring Controls
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Real-time Monitoring</h3>
-                  <p className="text-muted-foreground">
-                    Live data visualization and monitoring tools coming soon...
-                  </p>
+                <div className="flex flex-wrap gap-4">
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Play className="h-4 w-4" />
+                    Start Monitoring
+                  </Button>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Pause className="h-4 w-4" />
+                    Pause All
+                  </Button>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    Export Live Data
+                  </Button>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Refresh Status
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="deployment" className="space-y-4">
+            {/* Deployment Planning */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Quick Deploy */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-blue-500" />
+                    Quick Deploy
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium">Float Name</label>
+                      <Input placeholder="Enter float name" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-sm font-medium">Latitude</label>
+                        <Input placeholder="0.00" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Longitude</label>
+                        <Input placeholder="0.00" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Deployment Date</label>
+                      <Input type="date" />
+                    </div>
+                    <Button className="w-full">
+                      <Ship className="h-4 w-4 mr-2" />
+                      Schedule Deployment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Deployment Queue */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-orange-500" />
+                    Deployment Queue
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {[
+                      { name: 'Southern Explorer', date: '2024-02-15', location: 'Antarctic Circle' },
+                      { name: 'Equatorial Monitor', date: '2024-02-20', location: 'Pacific Equator' },
+                      { name: 'Arctic Tracker', date: '2024-03-01', location: 'Bering Sea' }
+                    ].map((deployment, i) => (
+                      <div key={i} className="p-3 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-medium text-sm">{deployment.name}</p>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">📅 {deployment.date}</p>
+                        <p className="text-xs text-muted-foreground">📍 {deployment.location}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Fleet Management */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Navigation className="h-5 w-5 text-purple-500" />
+                    Fleet Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                      <p className="text-2xl font-bold text-green-600">{activeFloats}</p>
+                      <p className="text-xs text-green-600">Active</p>
+                    </div>
+                    <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                      <p className="text-2xl font-bold text-blue-600">3</p>
+                      <p className="text-xs text-blue-600">Scheduled</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Button variant="outline" size="sm" className="w-full">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      View Deployment Map
+                    </Button>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Schedule
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Deployments */}
             <Card>
               <CardHeader>
-                <CardTitle>Deployment Management</CardTitle>
-                <CardDescription>Plan and manage float deployments</CardDescription>
+                <CardTitle>Recent Deployments</CardTitle>
+                <CardDescription>Successfully deployed floats in the last 30 days</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Deployment Planning</h3>
-                  <p className="text-muted-foreground">
-                    Deployment scheduling and management tools coming soon...
-                  </p>
+                <div className="space-y-3">
+                  {mockFloats.filter(f => f.status === 'deployed').map(float => (
+                    <div key={float.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-950 rounded-full flex items-center justify-center">
+                          <Ship className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{float.name}</p>
+                          <p className="text-sm text-muted-foreground">ID: {float.id}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">{float.deploymentDate}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {float.location.lat.toFixed(2)}°, {float.location.lng.toFixed(2)}°
+                        </p>
+                      </div>
+                      <Badge className="bg-blue-500/20 text-blue-700 border-blue-500/30">
+                        <Activity className="h-3 w-3 mr-1" />
+                        Deployed
+                      </Badge>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
